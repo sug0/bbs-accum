@@ -50,7 +50,8 @@ impl<E: pairing::Engine> Accumulator<E> {
 }
 
 impl<E: pairing::MultiMillerLoop> Accumulator<E> {
-    /// Check the validity of a proof.
+    /// Check the validity of a [`Proof`] against the current state
+    /// of the [`Accumulator`].
     pub fn verify_proof(&self, proof: &Proof<E>) -> bool {
         let accum_minus_kv = self.accum - proof.auth_g1 * proof.value;
 
