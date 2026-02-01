@@ -68,8 +68,10 @@ impl<E: pairing::Engine> Secret<E> {
     }
 
     /// Parse a [`Secret`] from a byte array.
-    pub fn from_bytes(repr: <E::Fr as PrimeField>::Repr) -> CtOption<Self> {
-        E::Fr::from_repr(repr).map(|secret| Self { secret })
+    pub fn from_bytes(repr: <E::Fr as PrimeField>::Repr) -> Option<Self> {
+        E::Fr::from_repr(repr)
+            .into_option()
+            .map(|secret| Self { secret })
     }
 
     /// Encode a [`Secret`] to a byte array.
