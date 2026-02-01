@@ -126,6 +126,23 @@ impl<E: pairing::Engine> AuthenticationToken<E> {
             auth: self.auth_g1,
         }
     }
+
+    /// Homomorphically add two authentication tokens. This is
+    /// useful if DKG was used to generate the [`Secret`] of
+    /// the [`Accumulator`].
+    ///
+    /// If the underlying keys are different, [`None`] is returned.
+    pub fn add(&self, rhs: &Self) -> Option<Self> {
+        if self.key != rhs.key {
+            return None;
+        }
+
+        Some(Self {
+            key: self.key,
+            auth_g1: self.auth_g1 + rhs.auth_g1,
+            auth_g2: self.auth_g2 + rhs.auth_g2,
+        })
+    }
 }
 
 impl<E: pairing::MultiMillerLoop> AuthenticationToken<E> {
