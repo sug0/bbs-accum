@@ -1,0 +1,14 @@
+[package]
+name = "bbs-accum"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ff = { version = "0.13.1", default-features = false }
+group = { version = "0.13.0", default-features = false }
+pairing = { version = "0.23.0", default-features = false }
+rand_core = "0.6.4"
+subtle = { version = "2.6.1", default-features = false }
+
+[dev-dependencies]
+blstrs = "0.7.1"
