@@ -1,6 +1,9 @@
 #![no_std]
 
+extern crate alloc;
+
 pub mod authentication;
+mod serialization;
 
 use ff::Field;
 use group::Group;
