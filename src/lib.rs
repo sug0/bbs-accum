@@ -181,6 +181,7 @@ pub fn assign<E: pairing::Engine>(
 
 /// Inclusion or non-inclusion proof of a k:v pair
 /// in an [`Accumulator`].
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Proof<E: pairing::Engine> {
     #[allow(dead_code)]
     key: E::Fr,
@@ -209,6 +210,7 @@ impl<E: pairing::MultiMillerLoop> Proof<E> {
 }
 
 /// Compact version of a [`Proof`].
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct CompressedProof<E: pairing::Engine> {
     auth_g1_times_v: E::G1,
     auth_g2: E::G2,
