@@ -53,20 +53,12 @@ impl<E: pairing::MultiMillerLoop> Accumulator<E> {
     /// Check the validity of a [`Proof`] against the current state
     /// of the [`Accumulator`].
     pub fn verify_proof(&self, proof: &Proof<E>) -> bool {
-        let accum_minus_kv = self.accum - proof.auth_g1 * proof.value;
-
-        let auth_g2: E::G2Affine = proof.auth_g2.into();
-        let auth_g2: E::G2Prepared = auth_g2.into();
-
-        let neg_g2 = (-E::G2Affine::generator()).into();
-
-        E::multi_miller_loop(&[
-            (&accum_minus_kv.into(), &auth_g2),
-            (&proof.witness.into(), &neg_g2),
-        ])
-        .final_exponentiation()
-        .is_identity()
-        .into()
+        verify_proof_internal::<E>(
+            self.accum,
+            proof.auth_g1 * proof.value,
+            proof.auth_g2,
+            proof.witness,
+        )
     }
 }
 
@@ -199,11 +191,40 @@ pub struct Proof<E: pairing::Engine> {
 }
 
 impl<E: pairing::MultiMillerLoop> Proof<E> {
-    /// Check the validity of a [`Proof`] against the current state
-    /// of the [`Accumulator`].
+    /// Check the validity of this [`Proof`] against the current state
+    /// of the given [`Accumulator`].
     #[inline]
     pub fn verify(&self, accumulator: &Accumulator<E>) -> bool {
         accumulator.verify_proof(self)
+    }
+
+    /// Compress this [`Proof`].
+    pub fn compress(&self) -> CompressedProof<E> {
+        CompressedProof {
+            auth_g1_times_v: self.auth_g1 * self.value,
+            auth_g2: self.auth_g2,
+            witness: self.witness,
+        }
+    }
+}
+
+/// Compact version of a [`Proof`].
+pub struct CompressedProof<E: pairing::Engine> {
+    auth_g1_times_v: E::G1,
+    auth_g2: E::G2,
+    witness: E::G1,
+}
+
+impl<E: pairing::MultiMillerLoop> CompressedProof<E> {
+    /// Check the validity of this [`CompressedProof`] against the
+    /// current state of the given [`Accumulator`].
+    pub fn verify(&self, accum: &Accumulator<E>) -> bool {
+        verify_proof_internal::<E>(
+            accum.accum,
+            self.auth_g1_times_v,
+            self.auth_g2,
+            self.witness,
+        )
     }
 }
 
@@ -220,6 +241,29 @@ pub const fn assemble_proof<E: pairing::Engine>(
         auth_g2: token.auth_g2,
         witness: witness.witness,
     }
+}
+
+#[inline]
+fn verify_proof_internal<E: pairing::MultiMillerLoop>(
+    accum: E::G1,
+    auth_g1_times_v: E::G1,
+    auth_g2: E::G2,
+    witness: E::G1,
+) -> bool {
+    let accum_minus_kv = accum - auth_g1_times_v;
+
+    let auth_g2: E::G2Affine = auth_g2.into();
+    let auth_g2: E::G2Prepared = auth_g2.into();
+
+    let neg_g2 = (-E::G2Affine::generator()).into();
+
+    E::multi_miller_loop(&[
+        (&accum_minus_kv.into(), &auth_g2),
+        (&witness.into(), &neg_g2),
+    ])
+    .final_exponentiation()
+    .is_identity()
+    .into()
 }
 
 #[cfg(test)]
@@ -330,5 +374,8 @@ mod tests {
         inc_witness_2.update(&token_3.unassigned_key().assign(11u64.into()));
         let proof = assemble_proof(&token_2, &assignment, &inc_witness_2.freeze());
         assert!(accumulator.verify_proof(&proof));
+
+        // let's also test a compact proof, for good measure
+        assert!(proof.compress().verify(&accumulator));
     }
 }
