@@ -14,8 +14,8 @@ use super::AuthenticationToken;
 /// This is only used to [authenticate keys](Public::authenticate).
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Public<E: pairing::Engine> {
-    pk_g1: E::G1,
-    pk_g2: E::G2,
+    pub(crate) pk_g1: E::G1,
+    pub(crate) pk_g2: E::G2,
 }
 
 impl<E: pairing::MultiMillerLoop> Public<E> {

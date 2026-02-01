@@ -3,7 +3,7 @@ use alloc::vec::Vec;
 use ff::PrimeField;
 use group::GroupEncoding;
 
-use super::{Accumulator, AuthenticationToken, CompressedProof, IncrementalWitness, Proof};
+use super::{Accumulator, AuthenticationToken, CompressedProof, IncrementalWitness, Proof, Public};
 
 impl<E: pairing::Engine> Accumulator<E> {
     pub fn from_bytes(repr: &<E::G1 as GroupEncoding>::Repr) -> Option<Self> {
@@ -195,6 +195,37 @@ impl<E: pairing::Engine> CompressedProof<E> {
     }
 }
 
+impl<E: pairing::Engine> Public<E> {
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        let g1_len = <E::G1 as GroupEncoding>::Repr::default().as_ref().len();
+        let g2_len = <E::G2 as GroupEncoding>::Repr::default().as_ref().len();
+
+        if bytes.len() != g1_len + g2_len {
+            return None;
+        }
+
+        let (pk_g1_bytes, pk_g2_bytes) = bytes.split_at(g1_len);
+
+        let mut pk_g1_repr = <E::G1 as GroupEncoding>::Repr::default();
+        pk_g1_repr.as_mut().copy_from_slice(pk_g1_bytes);
+
+        let mut pk_g2_repr = <E::G2 as GroupEncoding>::Repr::default();
+        pk_g2_repr.as_mut().copy_from_slice(pk_g2_bytes);
+
+        let pk_g1 = E::G1::from_bytes(&pk_g1_repr).into_option()?;
+        let pk_g2 = E::G2::from_bytes(&pk_g2_repr).into_option()?;
+
+        Some(Self { pk_g1, pk_g2 })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut out = Vec::new();
+        out.extend_from_slice(self.pk_g1.to_bytes().as_ref());
+        out.extend_from_slice(self.pk_g2.to_bytes().as_ref());
+        out
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -308,6 +339,25 @@ mod tests {
             assert_eq!(av1, av2);
             assert_eq!(ag2_1, ag2_2);
             assert_eq!(w1, w2);
+        }
+
+        // Public
+        let public = secret.public();
+
+        let bytes = public.to_bytes();
+        let recovered = Public::<Bls12>::from_bytes(&bytes).unwrap();
+
+        {
+            let Public {
+                pk_g1: pk_g1_orig,
+                pk_g2: pk_g2_orig,
+            } = public;
+            let Public {
+                pk_g1: pk_g1_recovered,
+                pk_g2: pk_g2_recovered,
+            } = recovered;
+            assert_eq!(pk_g1_orig, pk_g1_recovered);
+            assert_eq!(pk_g2_orig, pk_g2_recovered);
         }
     }
 }
