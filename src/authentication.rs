@@ -1,7 +1,5 @@
 //! Trusted parameters of the accumulator commitment scheme.
 
-use core::marker::PhantomData;
-
 use ff::{Field, PrimeField};
 use group::Group;
 use group::prime::PrimeCurveAffine;
@@ -18,7 +16,6 @@ use super::AuthenticationToken;
 pub struct Public<E: pairing::Engine> {
     pk_g1: E::G1,
     pk_g2: E::G2,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::MultiMillerLoop> Public<E> {
@@ -52,16 +49,12 @@ impl<E: pairing::MultiMillerLoop> Public<E> {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Secret<E: pairing::Engine> {
     secret: E::Fr,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::Engine> Secret<E> {
     /// Create a new [`Secret`] from a raw scalar field element.
     pub const fn from_prime_field(secret: E::Fr) -> Self {
-        Self {
-            secret,
-            _engine: PhantomData,
-        }
+        Self { secret }
     }
 
     /// Randomly sample a new [`Secret`] from a CSRNG.
@@ -71,16 +64,12 @@ impl<E: pairing::Engine> Secret<E> {
     {
         Self {
             secret: E::Fr::random(rng),
-            _engine: PhantomData,
         }
     }
 
     /// Parse a [`Secret`] from a byte array.
     pub fn from_bytes(repr: <E::Fr as PrimeField>::Repr) -> CtOption<Self> {
-        E::Fr::from_repr(repr).map(|secret| Self {
-            secret,
-            _engine: PhantomData,
-        })
+        E::Fr::from_repr(repr).map(|secret| Self { secret })
     }
 
     /// Encode a [`Secret`] to a byte array.
@@ -93,7 +82,6 @@ impl<E: pairing::Engine> Secret<E> {
         Public {
             pk_g1: E::G1::generator() * self.secret,
             pk_g2: E::G2::generator() * self.secret,
-            _engine: PhantomData,
         }
     }
 
@@ -105,7 +93,6 @@ impl<E: pairing::Engine> Secret<E> {
                 key,
                 auth_g1: E::G1::generator() * secret_plus_key,
                 auth_g2: E::G2::generator() * secret_plus_key,
-                _engine: PhantomData,
             })
     }
 }

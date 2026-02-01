@@ -2,8 +2,6 @@
 
 pub mod authentication;
 
-use core::marker::PhantomData;
-
 use ff::Field;
 use group::Group;
 use group::prime::PrimeCurveAffine;
@@ -17,14 +15,12 @@ pub struct Assignment<E: pairing::Engine> {
     key: E::Fr,
     value: E::Fr,
     auth: E::G1,
-    _engine: PhantomData<E>,
 }
 
 /// Accumulator of k:v pairs.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Accumulator<E: pairing::Engine> {
     accum: E::G1,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::Engine> Default for Accumulator<E> {
@@ -38,7 +34,6 @@ impl<E: pairing::Engine> Accumulator<E> {
     pub fn new() -> Self {
         Self {
             accum: E::G1::identity(),
-            _engine: PhantomData,
         }
     }
 
@@ -78,7 +73,6 @@ impl<E: pairing::MultiMillerLoop> Accumulator<E> {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct FrozenWitness<E: pairing::Engine> {
     witness: E::G1,
-    _engine: PhantomData<E>,
 }
 
 /// Incrementally built proof of knowledge of a key.
@@ -87,7 +81,6 @@ pub struct IncrementalWitness<E: pairing::Engine> {
     key: E::Fr,
     auth: E::G1,
     witness: E::G1,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::Engine> IncrementalWitness<E> {
@@ -107,7 +100,6 @@ impl<E: pairing::Engine> IncrementalWitness<E> {
     pub const fn freeze(self) -> FrozenWitness<E> {
         FrozenWitness {
             witness: self.witness,
-            _engine: PhantomData,
         }
     }
 }
@@ -119,7 +111,6 @@ pub struct AuthenticationToken<E: pairing::Engine> {
     key: E::Fr,
     auth_g1: E::G1,
     auth_g2: E::G2,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::Engine> AuthenticationToken<E> {
@@ -129,7 +120,6 @@ impl<E: pairing::Engine> AuthenticationToken<E> {
             key: self.key,
             auth: self.auth_g1,
             witness: E::G1::identity(),
-            _engine: PhantomData,
         }
     }
 
@@ -138,7 +128,6 @@ impl<E: pairing::Engine> AuthenticationToken<E> {
         UnassignedKey {
             key: self.key,
             auth: self.auth_g1,
-            _engine: PhantomData,
         }
     }
 }
@@ -156,7 +145,6 @@ impl<E: pairing::MultiMillerLoop> AuthenticationToken<E> {
 pub struct UnassignedKey<E: pairing::Engine> {
     key: E::Fr,
     auth: E::G1,
-    _engine: PhantomData<E>,
 }
 
 impl<E: pairing::Engine> UnassignedKey<E> {
@@ -176,7 +164,6 @@ impl<E: pairing::Engine> UnassignedKey<E> {
             key: self.key,
             value,
             auth: self.auth,
-            _engine: PhantomData,
         }
     }
 }
@@ -208,7 +195,6 @@ pub struct Proof<E: pairing::Engine> {
     auth_g1: E::G1,
     auth_g2: E::G2,
     witness: E::G1,
-    _engine: PhantomData<E>,
 }
 
 /// Assemble a new [`Proof`] .
@@ -223,7 +209,6 @@ pub const fn assemble_proof<E: pairing::Engine>(
         auth_g1: token.auth_g1,
         auth_g2: token.auth_g2,
         witness: witness.witness,
-        _engine: PhantomData,
     }
 }
 
