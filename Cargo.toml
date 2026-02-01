@@ -3,7 +3,7 @@ name = "bbs-accum"
 description = "Rust implementation of the accumulator commitment scheme by Jutla et al"
 repository = "https://github.com/sug0/bbs-accum"
 license = "MIT"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
