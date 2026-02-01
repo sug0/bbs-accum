@@ -1,5 +1,7 @@
 //! Trusted parameters of the accumulator commitment scheme.
 
+pub mod dkg;
+
 use core::ops::Add;
 
 use ff::{Field, PrimeField};
