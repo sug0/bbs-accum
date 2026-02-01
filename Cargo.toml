@@ -15,3 +15,4 @@ subtle = { version = "2.6.1", default-features = false }
 
 [dev-dependencies]
 blstrs = "0.7.1"
+rand_chacha = "0.3.1"
