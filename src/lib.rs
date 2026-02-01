@@ -198,6 +198,15 @@ pub struct Proof<E: pairing::Engine> {
     witness: E::G1,
 }
 
+impl<E: pairing::MultiMillerLoop> Proof<E> {
+    /// Check the validity of a [`Proof`] against the current state
+    /// of the [`Accumulator`].
+    #[inline]
+    pub fn verify(&self, accumulator: &Accumulator<E>) -> bool {
+        accumulator.verify_proof(self)
+    }
+}
+
 /// Assemble a new [`Proof`] .
 pub const fn assemble_proof<E: pairing::Engine>(
     token: &AuthenticationToken<E>,
