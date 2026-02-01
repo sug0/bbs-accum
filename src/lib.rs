@@ -273,10 +273,6 @@ fn verify_proof_internal<E: pairing::MultiMillerLoop>(
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
-
-    use std::prelude::rust_2024::*;
-
     use blstrs::Bls12;
 
     use super::*;
