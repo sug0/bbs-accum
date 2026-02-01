@@ -51,7 +51,7 @@ impl<E: pairing::Engine> Accumulator<E> {
 
 impl<E: pairing::MultiMillerLoop> Accumulator<E> {
     /// Check the validity of a proof.
-    pub fn check_proof(&self, proof: &Proof<E>) -> bool {
+    pub fn verify_proof(&self, proof: &Proof<E>) -> bool {
         let accum_minus_kv = self.accum - proof.auth_g1 * proof.value;
 
         let auth_g2: E::G2Affine = proof.auth_g2.into();
@@ -255,7 +255,7 @@ mod tests {
                 &tok.unassigned_key().assign_zero(),
                 &tok.incremental_witness().freeze(),
             );
-            assert!(accumulator.check_proof(&proof));
+            assert!(accumulator.verify_proof(&proof));
         }
 
         // add 4:20 to the accumulator
@@ -266,7 +266,7 @@ mod tests {
         // to update inc_witness_4, we only do so if a key different
         // from 4 has been added to the accumulator
         let proof = assemble_proof(&token_4, &assignment, &inc_witness_4.freeze());
-        assert!(accumulator.check_proof(&proof));
+        assert!(accumulator.verify_proof(&proof));
 
         // now let's add a delta of 1, ending up with the assignment 4:21
         let assignment = token_4.unassigned_key().assign(1u64.into());
@@ -274,12 +274,12 @@ mod tests {
 
         // 4:1 is **not** a valid assignment
         let proof = assemble_proof(&token_4, &assignment, &inc_witness_4.freeze());
-        assert!(!accumulator.check_proof(&proof));
+        assert!(!accumulator.verify_proof(&proof));
 
         // but 4:21 is
         let assignment = token_4.unassigned_key().assign(21u64.into());
         let proof = assemble_proof(&token_4, &assignment, &inc_witness_4.freeze());
-        assert!(accumulator.check_proof(&proof));
+        assert!(accumulator.verify_proof(&proof));
 
         // now let's add a new key to the accumulator, 3:11
         let last_assignment = assignment;
@@ -289,36 +289,36 @@ mod tests {
         // the proof of 4:21 should fail now, because we haven't
         // updated inc_witness_4
         let proof = assemble_proof(&token_4, &last_assignment, &inc_witness_4.freeze());
-        assert!(!accumulator.check_proof(&proof));
+        assert!(!accumulator.verify_proof(&proof));
 
         // as soon as we update inc_witness_4, the proof
         // should be valid
         inc_witness_4.update(&assignment);
         let proof = assemble_proof(&token_4, &last_assignment, &inc_witness_4.freeze());
-        assert!(accumulator.check_proof(&proof));
+        assert!(accumulator.verify_proof(&proof));
 
         // the inclusion proof of 3:11 without
         // updating inc_witness_3 should fail
         let proof = assemble_proof(&token_3, &assignment, &inc_witness_3.freeze());
-        assert!(!accumulator.check_proof(&proof));
+        assert!(!accumulator.verify_proof(&proof));
 
         // let's bring inc_witness_3 up to speed
         // and test the proof again
         inc_witness_3.update(&last_assignment);
         let proof = assemble_proof(&token_3, &assignment, &inc_witness_3.freeze());
-        assert!(accumulator.check_proof(&proof));
+        assert!(accumulator.verify_proof(&proof));
 
         // the non-inclusion proof of 2 without
         // updating inc_witness_2 should fail
         let assignment = token_2.unassigned_key().assign_zero();
         let proof = assemble_proof(&token_2, &assignment, &inc_witness_2.freeze());
-        assert!(!accumulator.check_proof(&proof));
+        assert!(!accumulator.verify_proof(&proof));
 
         // let's bring inc_witness_2 up to speed
         // and test the proof again
         inc_witness_2.update(&token_4.unassigned_key().assign(21u64.into()));
         inc_witness_2.update(&token_3.unassigned_key().assign(11u64.into()));
         let proof = assemble_proof(&token_2, &assignment, &inc_witness_2.freeze());
-        assert!(accumulator.check_proof(&proof));
+        assert!(accumulator.verify_proof(&proof));
     }
 }
