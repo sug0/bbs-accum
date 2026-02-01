@@ -61,7 +61,7 @@ impl<E: pairing::MultiMillerLoop> Public<E> {
 /// Trusted secret of the accumulator commitment scheme.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Secret<E: pairing::Engine> {
-    secret: E::Fr,
+    pub(crate) secret: E::Fr,
 }
 
 impl<E: pairing::Engine> Add for Secret<E> {
