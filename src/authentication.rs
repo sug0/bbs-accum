@@ -1,5 +1,7 @@
 //! Trusted parameters of the accumulator commitment scheme.
 
+use core::ops::Add;
+
 use ff::{Field, PrimeField};
 use group::Group;
 use group::prime::PrimeCurveAffine;
@@ -16,6 +18,17 @@ use super::AuthenticationToken;
 pub struct Public<E: pairing::Engine> {
     pub(crate) pk_g1: E::G1,
     pub(crate) pk_g2: E::G2,
+}
+
+impl<E: pairing::Engine> Add for Public<E> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            pk_g1: self.pk_g1 + rhs.pk_g1,
+            pk_g2: self.pk_g2 + rhs.pk_g2,
+        }
+    }
 }
 
 impl<E: pairing::MultiMillerLoop> Public<E> {
@@ -49,6 +62,16 @@ impl<E: pairing::MultiMillerLoop> Public<E> {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Secret<E: pairing::Engine> {
     secret: E::Fr,
+}
+
+impl<E: pairing::Engine> Add for Secret<E> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            secret: self.secret + rhs.secret,
+        }
+    }
 }
 
 impl<E: pairing::Engine> Secret<E> {
