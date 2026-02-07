@@ -85,11 +85,11 @@ impl<E: pairing::Engine> IncrementalWitness<E> {
         // if inverting succeeds, we implicitly verify that
         // both keys are different, so it's safe to proceed
         // with the witness update
-        let Some(key_diff) = (assignment.key - self.key).invert().into_option() else {
+        let Some(one_over_key_diff) = (assignment.key - self.key).invert().into_option() else {
             return;
         };
 
-        self.witness += (self.auth - assignment.auth) * (key_diff * assignment.value);
+        self.witness += (self.auth - assignment.auth) * (one_over_key_diff * assignment.value);
     }
 
     /// Avoid further updates to this [`IncrementalWitness`].

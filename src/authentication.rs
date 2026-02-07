@@ -116,10 +116,10 @@ impl<E: pairing::Engine> Secret<E> {
     pub fn token(&self, key: E::Fr) -> CtOption<AuthenticationToken<E>> {
         (self.secret + key)
             .invert()
-            .map(|secret_plus_key| AuthenticationToken {
+            .map(|one_over_secret_plus_key| AuthenticationToken {
                 key,
-                auth_g1: E::G1::generator() * secret_plus_key,
-                auth_g2: E::G2::generator() * secret_plus_key,
+                auth_g1: E::G1::generator() * one_over_secret_plus_key,
+                auth_g2: E::G2::generator() * one_over_secret_plus_key,
             })
     }
 }
